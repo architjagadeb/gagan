@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #0f1c1e;
+  --color-ink-muted: #3d5256;
+  --color-surface: #f2f8f7;
+  --color-surface-raised: #ffffff;
+  --color-border: #d5e4e2;
+  --color-teal: #0b6e6e;
+  --color-teal-dark: #085858;
+  --color-teal-soft: #d8f0ef;
+  --color-coral: #e85d4c;
+  --color-coral-dark: #c94738;
+  --color-coral-soft: #fde8e4;
+  --color-amber: #e8a317;
+  --color-amber-soft: #fff3d6;
+  --color-go: #1a9b6c;
+  --color-go-soft: #d8f5e8;
+  --color-map-land: #e8f2f0;
+  --color-map-road: #c5d8d5;
+  --color-zone: #e85d4c;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    background:
+      radial-gradient(ellipse 120% 80% at 10% -20%, #c8ebe8 0%, transparent 55%),
+      radial-gradient(ellipse 90% 60% at 100% 0%, #ffe0d6 0%, transparent 45%),
+      var(--color-surface);
+    background-attachment: fixed;
+  }
+
+  #root {
+    min-height: 100dvh;
+  }
+
+  button,
+  input,
+  select {
+    font: inherit;
+  }
+}
+
+@keyframes verdict-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes check-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes route-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-verdict-in {
+  animation: verdict-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-check-pop {
+  animation: check-pop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.route-line-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: route-draw 0.7s ease-out forwards;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-in {
+  animation: page-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
