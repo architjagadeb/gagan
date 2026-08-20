@@ -1,14 +1,42 @@
-import { Menu, Plane, UserRound, X } from 'lucide-react'
-import { useEffect, useId, useRef, useState } from 'react'
+import { UserRound } from 'lucide-react'
+import { useEffect, useId, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { CheckDeliveryCta } from './CheckDeliveryCta'
+import { Logo } from './Logo'
 
-const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-bold transition ${
-    isActive
-      ? 'bg-teal-soft text-teal-dark'
-      : 'text-ink-muted hover:bg-surface hover:text-ink'
-  }`
+const navItems = [
+  { to: '/', label: 'Home', end: true },
+  { to: '/planner', label: 'Planner' },
+  { to: '/#how-it-works', label: 'How it Works', hash: true },
+  { to: '/dashboard', label: 'Dashboard' },
+] as const
+
+function HowItWorksLink({
+  className,
+  onClick,
+}: {
+  className?: string
+  onClick?: () => void
+}) {
+  const location = useLocation()
+
+  const go = (e: ReactMouseEvent<HTMLAnchorElement>) => {
+    onClick?.()
+    if (location.pathname !== '/') {
+      return
+    }
+    e.preventDefault()
+    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })
+    window.history.replaceState(null, '', '/#how-it-works')
+  }
+
+  return (
+    <a href="/#how-it-works" className={className} onClick={go}>
+      How it Works
+    </a>
+  )
+}
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -21,7 +49,7 @@ export function Navbar() {
   useEffect(() => {
     setMenuOpen(false)
     setDropdownOpen(false)
-  }, [location.pathname])
+  }, [location.pathname, location.hash])
 
   useEffect(() => {
     if (!dropdownOpen) return
@@ -34,6 +62,13 @@ export function Navbar() {
     return () => document.removeEventListener('mousedown', onPointer)
   }, [dropdownOpen])
 
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [menuOpen])
+
   const initials = user
     ? user.name
         .split(/\s+/)
@@ -43,199 +78,153 @@ export function Navbar() {
     : ''
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-border/80 bg-surface-raised/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-2.5 sm:px-6">
-        <Link
-          to="/"
-          className="mr-auto flex min-h-11 items-center gap-2.5 rounded-xl pr-2"
-        >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal text-white">
-            <Plane className="h-4 w-4" strokeWidth={2.4} aria-hidden />
-          </span>
-          <span className="font-display text-lg font-extrabold tracking-tight text-ink">
-            Gagan
-          </span>
-        </Link>
+    <>
+      <nav className="site-nav">
+        <div className="site-nav-inner">
+          <Logo />
 
-        <div className="hidden items-center gap-1 md:flex">
-          <NavLink to="/" end className={linkClass}>
-            Home
-          </NavLink>
-          <NavLink to="/planner" className={linkClass}>
-            Planner
-          </NavLink>
-          <a href="/#how-it-works" className={linkClass({ isActive: false })}>
-            How it Works
-          </a>
-          {isAuthenticated && (
-            <NavLink to="/dashboard" className={linkClass}>
-              Dashboard
-            </NavLink>
-          )}
-        </div>
-
-        <div className="hidden items-center gap-2 md:flex">
-          {isAuthenticated && user ? (
-            <div className="relative" ref={dropdownRef}>
-              <button
-                type="button"
-                onClick={() => setDropdownOpen((o) => !o)}
-                className="inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-border bg-surface px-2.5 pr-3 font-bold text-ink transition hover:border-teal/40"
-                aria-expanded={dropdownOpen}
-                aria-haspopup="menu"
-              >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal text-xs font-extrabold text-white">
-                  {initials || <UserRound className="h-4 w-4" />}
-                </span>
-                <span className="max-w-[8rem] truncate text-sm">{user.name}</span>
-              </button>
-              {dropdownOpen && (
-                <div
-                  role="menu"
-                  className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-border bg-surface-raised py-1 shadow-lg"
+          <div className="site-nav-links">
+            {navItems.map((item) =>
+              'hash' in item && item.hash ? (
+                <HowItWorksLink key={item.label} />
+              ) : (
+                <NavLink
+                  key={item.label}
+                  to={item.to}
+                  end={'end' in item && item.end}
                 >
-                  <Link
-                    to="/dashboard"
-                    role="menuitem"
-                    className="flex min-h-11 items-center px-4 text-sm font-semibold text-ink hover:bg-surface"
-                  >
-                    My Deliveries
-                  </Link>
-                  <Link
-                    to="/profile"
-                    role="menuitem"
-                    className="flex min-h-11 items-center px-4 text-sm font-semibold text-ink hover:bg-surface"
-                  >
-                    Profile
-                  </Link>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={logout}
-                    className="flex min-h-11 w-full items-center px-4 text-sm font-semibold text-coral hover:bg-coral-soft"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              <Link
-                to="/login"
-                className="inline-flex min-h-11 items-center rounded-2xl px-4 text-sm font-bold text-ink-muted transition hover:text-ink"
-              >
-                Login
-              </Link>
-              <Link
-                to="/signup"
-                className="inline-flex min-h-11 items-center rounded-2xl bg-teal px-4 text-sm font-bold text-white transition hover:bg-teal-dark"
-              >
-                Sign Up
-              </Link>
-            </>
-          )}
-        </div>
-
-        <button
-          type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border-2 border-border bg-surface text-ink md:hidden"
-          aria-expanded={menuOpen}
-          aria-controls={menuId}
-          onClick={() => setMenuOpen((o) => !o)}
-        >
-          {menuOpen ? (
-            <X className="h-5 w-5" aria-hidden />
-          ) : (
-            <Menu className="h-5 w-5" aria-hidden />
-          )}
-          <span className="sr-only">Menu</span>
-        </button>
-      </div>
-
-      {menuOpen && (
-        <div
-          id={menuId}
-          className="border-t border-border bg-surface-raised px-4 py-3 md:hidden"
-        >
-          <div className="flex flex-col gap-1">
-            <NavLink to="/" end className={linkClass} onClick={() => setMenuOpen(false)}>
-              Home
-            </NavLink>
-            <NavLink
-              to="/planner"
-              className={linkClass}
-              onClick={() => setMenuOpen(false)}
-            >
-              Planner
-            </NavLink>
-            <a
-              href="/#how-it-works"
-              className={linkClass({ isActive: false })}
-              onClick={() => setMenuOpen(false)}
-            >
-              How it Works
-            </a>
-            {isAuthenticated && (
-              <NavLink
-                to="/dashboard"
-                className={linkClass}
-                onClick={() => setMenuOpen(false)}
-              >
-                Dashboard
-              </NavLink>
+                  {item.label}
+                </NavLink>
+              ),
             )}
           </div>
 
-          <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
-            {isAuthenticated && user ? (
-              <>
-                <Link
-                  to="/dashboard"
-                  className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-bold text-ink"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  My Deliveries
-                </Link>
-                <Link
-                  to="/profile"
-                  className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-bold text-ink"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Profile
-                </Link>
+          <div className="site-nav-right">
+            {isAuthenticated && user && (
+              <div className="relative" ref={dropdownRef}>
                 <button
                   type="button"
-                  onClick={() => {
-                    logout()
-                    setMenuOpen(false)
-                  }}
-                  className="inline-flex min-h-11 items-center rounded-xl px-3 text-left text-sm font-bold text-coral"
+                  onClick={() => setDropdownOpen((o) => !o)}
+                  className="inline-flex h-9 items-center gap-2 rounded-full border border-black/8 bg-white px-1.5 pr-2.5 text-[13px] font-medium text-[var(--text-main)]"
+                  aria-expanded={dropdownOpen}
+                  aria-haspopup="menu"
                 >
-                  Logout
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)] text-[11px] font-bold text-white">
+                    {initials || <UserRound className="h-3.5 w-3.5" />}
+                  </span>
+                  <span className="max-w-[7rem] truncate">{user.name}</span>
                 </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="inline-flex min-h-11 items-center justify-center rounded-2xl border-2 border-border text-sm font-bold text-ink"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/signup"
-                  className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-teal text-sm font-bold text-white"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Sign Up
-                </Link>
-              </>
+                {dropdownOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 mt-2 w-44 overflow-hidden rounded-2xl border border-black/8 bg-white py-1 shadow-lg"
+                  >
+                    <Link
+                      to="/dashboard"
+                      role="menuitem"
+                      className="flex min-h-10 items-center px-4 text-sm text-[var(--text-main)] hover:bg-[#f5f5f5]"
+                    >
+                      My Deliveries
+                    </Link>
+                    <Link
+                      to="/profile"
+                      role="menuitem"
+                      className="flex min-h-10 items-center px-4 text-sm text-[var(--text-main)] hover:bg-[#f5f5f5]"
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={logout}
+                      className="flex min-h-10 w-full items-center px-4 text-sm text-coral hover:bg-coral-soft"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
+            <CheckDeliveryCta />
           </div>
+
+          <button
+            type="button"
+            className={`hamburger ${menuOpen ? 'is-open' : ''}`}
+            aria-expanded={menuOpen}
+            aria-controls={menuId}
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            <span />
+            <span />
+            <span />
+            <span className="sr-only">Menu</span>
+          </button>
         </div>
-      )}
-    </nav>
+      </nav>
+
+      <div
+        id={menuId}
+        className={`nav-overlay ${menuOpen ? 'is-open' : ''}`}
+        aria-hidden={!menuOpen}
+        inert={!menuOpen}
+      >
+        {navItems.map((item) =>
+          'hash' in item && item.hash ? (
+            <HowItWorksLink
+              key={item.label}
+              className="overlay-link"
+              onClick={() => setMenuOpen(false)}
+            />
+          ) : (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              end={'end' in item && item.end}
+              className="overlay-link"
+              onClick={() => setMenuOpen(false)}
+            >
+              {item.label}
+            </NavLink>
+          ),
+        )}
+
+        {isAuthenticated && user ? (
+          <>
+            <Link
+              to="/profile"
+              className="overlay-link"
+              onClick={() => setMenuOpen(false)}
+            >
+              Profile
+            </Link>
+            <button
+              type="button"
+              className="overlay-link w-full text-left"
+              onClick={() => {
+                logout()
+                setMenuOpen(false)
+              }}
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <Link
+            to="/login"
+            className="overlay-link"
+            onClick={() => setMenuOpen(false)}
+          >
+            Login
+          </Link>
+        )}
+
+        <CheckDeliveryCta
+          arrowSize={32}
+          className="overlay-cta"
+          onClick={() => setMenuOpen(false)}
+        />
+      </div>
+    </>
   )
 }

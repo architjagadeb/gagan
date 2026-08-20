@@ -4,9 +4,16 @@ import { PRESET_ROUTES } from '../data/mock'
 type Props = {
   routeId: string
   onChange: (routeId: string) => void
+  distanceKm?: number
+  flightMinutes?: number
 }
 
-export function RoutePlanner({ routeId, onChange }: Props) {
+export function RoutePlanner({
+  routeId,
+  onChange,
+  distanceKm,
+  flightMinutes,
+}: Props) {
   const selected = PRESET_ROUTES.find((r) => r.id === routeId) ?? PRESET_ROUTES[0]
 
   return (
@@ -47,6 +54,23 @@ export function RoutePlanner({ routeId, onChange }: Props) {
           <p className="text-sm font-bold text-ink">{selected.dropName}</p>
         </div>
       </div>
+
+      {distanceKm != null && flightMinutes != null && (
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="rounded-2xl bg-surface px-3 py-2.5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+              Distance
+            </p>
+            <p className="font-display text-base font-bold text-ink">{distanceKm} km</p>
+          </div>
+          <div className="rounded-2xl bg-surface px-3 py-2.5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+              Flight time
+            </p>
+            <p className="font-display text-base font-bold text-ink">{flightMinutes} min</p>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

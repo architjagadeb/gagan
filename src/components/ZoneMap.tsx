@@ -1,6 +1,8 @@
 import { Ban, MapPinned } from 'lucide-react'
 import { MAP_SIZE, NO_FLY_ZONES, PRESET_ROUTES } from '../data/mock'
+import { pointAlongPath } from '../lib/motion'
 import type { Point } from '../types'
+import { DroneMark } from './DroneMark'
 
 type Props = {
   routeId: string
@@ -8,6 +10,7 @@ type Props = {
   alternatePath: Point[] | null
   showAlternate: boolean
   zoneHitId: string | null
+  flightProgress?: number | null
 }
 
 function pointsToSvg(path: Point[]): string {
@@ -20,8 +23,12 @@ export function ZoneMap({
   alternatePath,
   showAlternate,
   zoneHitId,
+  flightProgress = null,
 }: Props) {
   const route = PRESET_ROUTES.find((r) => r.id === routeId) ?? PRESET_ROUTES[0]
+  const flyPath = showAlternate && alternatePath ? alternatePath : directPath
+  const flight =
+    flightProgress != null ? pointAlongPath(flyPath, flightProgress) : null
 
   return (
     <section className="overflow-hidden rounded-3xl bg-surface-raised shadow-sm ring-1 ring-border">
@@ -204,6 +211,14 @@ export function ZoneMap({
             />
             <circle cx={route.drop.x} cy={route.drop.y} r="0.9" fill="#fff" />
           </g>
+
+          {flight && (
+            <g
+              transform={`translate(${flight.point.x} ${flight.point.y}) rotate(${flight.angle})`}
+            >
+              <DroneMark />
+            </g>
+          )}
         </svg>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap gap-2 p-2.5">

@@ -3,6 +3,7 @@ import {
   Battery,
   Check,
   Clock,
+  Download,
   Package,
   Route,
   ShieldAlert,
@@ -13,6 +14,8 @@ import type { FeasibilityCheck, RouteMetrics } from '../types'
 type Props = {
   metrics: RouteMetrics
   revealKey: string
+  onDownload?: () => void
+  downloading?: boolean
 }
 
 function StatusIcon({ status }: { status: FeasibilityCheck['status'] }) {
@@ -37,7 +40,12 @@ function StatusIcon({ status }: { status: FeasibilityCheck['status'] }) {
   )
 }
 
-export function VerdictCard({ metrics, revealKey }: Props) {
+export function VerdictCard({
+  metrics,
+  revealKey,
+  onDownload,
+  downloading = false,
+}: Props) {
   const go = metrics.feasible
 
   return (
@@ -103,6 +111,18 @@ export function VerdictCard({ metrics, revealKey }: Props) {
             value={`${metrics.requiredBattery}%`}
           />
         </div>
+
+        {onDownload && (
+          <button
+            type="button"
+            onClick={onDownload}
+            disabled={downloading}
+            className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-teal px-4 text-sm font-bold text-white transition hover:bg-teal-dark disabled:opacity-60"
+          >
+            <Download className="h-4 w-4" strokeWidth={2.4} aria-hidden />
+            {downloading ? 'Preparing report…' : 'Download Report'}
+          </button>
+        )}
       </div>
     </section>
   )
